@@ -25,6 +25,8 @@
     <Folder Include="Compartilhado\Mapping\" />
     <Folder Include="Compartilhado\Models\" />
     <Folder Include="Compartilhado\Views\" />
+    <Folder Include="ModuloHome\" />
+    <Folder Include="ModuloHome\Views\" />
   </ItemGroup>
 
 </Project>

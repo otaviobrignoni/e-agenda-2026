@@ -1,0 +1,39 @@
+﻿@{
+    ViewBag.Titulo = "Página Inicial";
+}
+
+<div class="row">
+    <div class="col-lg-7">
+        <h1 class="display-5 fw-semibold mb-3">eAgenda</h1>
+        <p class="lead text-secondary mb-4">
+            Gerencie sua rotina completa em um só lugar com a <span class="fw-semibold">e-Agenda</span>.
+        </p>
+        <ul class="mb-4">
+            <li class="lead text-secondary mb-2">
+                <span class="fw-semibold">Contatos e Compromissos:</span> Organize seus contatos e agende reuniões presenciais ou remotas sem conflitos de horário
+            </li>
+            <li class="lead text-secondary mb-2">
+                <span class="fw-semibold">Tarefas Inteligentes:</span> Controle pendências por prioridade e acompanhe o progresso automático através de subitens.
+            </li>
+            <li class="lead text-secondary mb-2">
+                <span class="fw-semibold">Gestão Financeira:</span> Monitore despesas por categoria e controle suas formas de pagamento de maneira simples.
+            </li>
+        </li>
+    </ul>
+    <p class="lead text-secondary mb-4">
+        Tudo o que você precisa para se manter produtivo, organizado e no controle.
+    </p>
+</div>
+<div class="col-lg-5">
+    <div class="card border-primary-subtle shadow-sm">
+        <div class="card-body p-4">
+            <h3 class="h5 text-primary mb-3">Módulos disponíveis</h3>
+            <partial name="_BotaoModulo" model="@("Contato", "Gerenciar contatos")" />
+            <partial name="_BotaoModulo" model="@("Compromisso", "Gerenciar compromissos")" />
+            <partial name="_BotaoModulo" model="@("Categoria", "Gerenciar categorias")" />
+            <partial name="_BotaoModulo" model="@("Despesa", "Gerenciar despesas")" />
+            <partial name="_BotaoModulo" model="@("Tarefa", "Gerenciar tarefas")" />
+        </div>
+    </div>
+</div>
+

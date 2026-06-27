@@ -1,0 +1,6 @@
+﻿@model (string controller, string texto)
+<div class="list-group">
+    <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center mb-1" asp-controller="@Model.controller">
+        @Model.texto<span class="badge text-bg-primary rounded-pill">Abrir</span>
+    </a>
+</div>
