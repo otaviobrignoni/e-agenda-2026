@@ -1,7 +1,7 @@
 ﻿@{
     string tituloPagina = ViewBag.Titulo != null
-        ? $"{ViewBag.Titulo} - Controle de Medicamentos"
-        : "Controle de Medicamentos";
+        ? $"{ViewBag.Titulo} - eAgenda"
+        : "eAgenda";
 }
 
 <!DOCTYPE html>
@@ -21,7 +21,7 @@
     @* Barra de Navegação *@
     <nav class="navbar navbar-expand-lg bg-white border-bottom">
         <div class="container">
-            <a class="navbar-brand fw-semibold" asp-controller="Home" asp-action="Index">Controle de Medicamentos</a>
+            <a class="navbar-brand fw-semibold" asp-controller="Home" asp-action="Index">eAgenda</a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -30,12 +30,6 @@
             <div class="collapse navbar-collapse" id="menuPrincipal">
                 <div class="navbar-nav ms-auto">
                     @* <a class="nav-link" asp-controller="(*)" asp-action="Listar">Gerenciar (*)s</a> *@
-                    <a class="nav-link" asp-controller="Home" asp-action="Index">Início</a>
-                    <a class="nav-link" asp-controller="Fornecedor" asp-action="Listar">Gerenciar Fornecedores</a>
-                    <a class="nav-link" asp-controller="Medicamento" asp-action="Listar">Gerenciar Medicamentos</a>
-                    <a class="nav-link" asp-controller="Paciente" asp-action="Listar">Gerenciar Pacientes</a>
-                    <a class="nav-link" asp-controller="Funcionario" asp-action="Listar">Gerenciar Funcionários</a>
-                    <a class="nav-link" asp-controller="Estoque" asp-action="Listar">Gerenciar Estoque</a>
                 </div>
             </div>
         </div>
