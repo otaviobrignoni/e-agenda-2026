@@ -23,17 +23,31 @@ jobs:
         with:
           dotnet-version: '10.x'
 
+      # Build da Aplicação .NET
       - name: Build with dotnet
         run: dotnet build --configuration Release
-
+      
+      # Build do Database Project SQL Server
+      - name: Build database project
+        run: dotnet build eAgenda.Database/eAgenda.Database.sqlproj --configuration Release
+      
+      # Publish da Aplicação .NET
       - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
-
+        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/eAgenda"
+      
+      # Upload da aplicação .NET compilada
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: ${{env.DOTNET_ROOT}}/eAgenda
+
+      # Upload do arquivo dacpac compilado
+      - name: Upload database artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-dacpac
+          path: eAgenda.Database/bin/Release/eAgenda.Database.dacpac
 
   deploy:
     runs-on: windows-latest
@@ -43,10 +57,19 @@ jobs:
       contents: read #This is required for actions/checkout
 
     steps:
+      # Download da aplicação .NET compilada
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: .net-app
+          path: app
+      
+      # Download do arquivo dacpac compilado
+      - name: Download database artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: database-dacpac
+          path: database
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -55,11 +78,21 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_9A51E39324114DEC817A267DDA2AD8F6 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_02295582CD734366AA7B3B73D8A3B8EE }}
 
+      # Publicação do database project no banco de dados da Azure
+      - name: Deploy database schema
+        uses: azure/sql-action@v2.3
+        with:
+          connection-string: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+          path: database/eAgenda.Database.dacpac
+          action: Publish
+          arguments: /p:BlockOnPossibleDataLoss=true
+
+      # Publicação da aplicação .NET na Azure
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'eAgenda'
           slot-name: 'Production'
-          package: .
+          package: app
           
