@@ -1,4 +1,15 @@
 @model FormSelectViewModel
+@{
+    var selectedValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+    if (Model.Value is not null)
+    {
+        selectedValues.Add(Model.Value.ToString()!);
+
+        if (Model.Value is Enum enumValue)
+            selectedValues.Add(Convert.ToInt64(enumValue).ToString());
+    }
+}
 <div class="form-group mb-3">
     <label for="@Model.Name" class="form-label fw-semibold text-primary text-uppercase small">@Model.Label</label>
     <select id="@Model.Name" name="@Model.Name" class="form-select">
@@ -8,7 +19,7 @@
         }
         @foreach (var option in Model.Options)
         {
-            if (option.Value == Model.Value?.ToString())
+            if (option.Selected || selectedValues.Contains(option.Value))
             {
                 <option value="@option.Value" selected>@option.Text</option>
             }
