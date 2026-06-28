@@ -1,9 +1,12 @@
-﻿@model (Guid id, bool mostrarDetalhes)
-<div class="d-flex flex-wrap gap-2 mt-auto justify-content-end">
-    <a class="btn btn-outline-primary btn-sm rounded-pill px-3" asp-action="Editar" asp-route-id="@Model.id">Editar</a>
-    <a class="btn btn-outline-primary btn-sm rounded-pill px-3" asp-action="Excluir" asp-route-id="@Model.id">Excluir</a>
+@model (Guid id, bool mostrarDetalhes, bool mostrarExcluir)
+<div class="mt-auto d-flex flex-wrap gap-2 justify-content-end">
     @if (Model.mostrarDetalhes)
     {
         <a class="btn btn-outline-primary btn-sm rounded-pill px-3" asp-action="Detalhes" asp-route-id="@Model.id">Detalhes</a>
+    }
+    <a class="btn btn-outline-secondary btn-sm rounded-pill px-3" asp-action="Editar" asp-route-id="@Model.id">Editar</a>
+    @if (Model.mostrarExcluir)
+    {
+        <a class="btn btn-outline-danger btn-sm rounded-pill px-3" asp-action="Excluir" asp-route-id="@Model.id">Excluir</a>
     }
 </div>
