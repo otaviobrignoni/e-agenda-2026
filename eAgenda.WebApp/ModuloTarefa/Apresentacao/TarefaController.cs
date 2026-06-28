@@ -77,5 +77,36 @@ namespace eAgenda.WebApp.ModuloTarefa.Apresentacao
 
             return RedirectToAction(nameof(Index));
         }
+
+        [HttpGet]
+        public ActionResult Excluir(Guid id)
+        {
+            var resultado = servicoTarefa.SelecionarMostrar(id);
+
+            if (resultado.IsFailed)
+            {
+                TempData.AddErrorMessage(resultado);
+                return RedirectToAction(nameof(Index));
+            }
+
+            var vm = mapper.Map<MostrarTarefaViewModel>(resultado.Value);
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        public ActionResult Excluir(MostrarTarefaViewModel vm)
+        {
+            Result resultado = servicoTarefa.Excluir(vm.Id);
+
+            if (resultado.IsFailed)
+            {
+                ModelState.AddModelError(resultado);
+                return View(vm);
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
     }
 }

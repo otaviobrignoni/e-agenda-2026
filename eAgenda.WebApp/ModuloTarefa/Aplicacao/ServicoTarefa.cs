@@ -20,6 +20,13 @@ public class ServicoTarefa(IRepositorioTarefa repositorioTarefa)
         return Result.Ok();
     }
 
+    public Result Excluir(Guid id)
+    {
+        if (!repositorioTarefa.Excluir(id))
+            return Result.Fail("Tarefa não encontrada.");
+        return Result.Ok();
+    }
+
     public Result<TarefaDto> Selecionar(Guid id)
     {
         var tarefa = repositorioTarefa.Selecionar(id);
@@ -28,12 +35,19 @@ public class ServicoTarefa(IRepositorioTarefa repositorioTarefa)
         return Result.Ok(new TarefaDto(tarefa.Titulo, tarefa.Prioridade, tarefa.Id));
     }
 
+    public Result<MostrarTarefaDto> SelecionarMostrar(Guid id)
+    {
+        var tarefa = repositorioTarefa.Selecionar(id);
+        if (tarefa is null)
+            return Result.Fail("Tarefa não encontrada.");
+        return Result.Ok(new MostrarTarefaDto(tarefa.Titulo, tarefa.Prioridade, tarefa.DataCriacao, tarefa.DataConclusao, tarefa.EstaConcluida, tarefa.PercentualConcluido, tarefa.Itens, tarefa.Id));
+    }
+
     public List<MostrarTarefaDto> Selecionar()
     {
         return repositorioTarefa.Registros.Select(t =>
         {
             t.Itens = repositorioTarefa.SelecionarItens(t.Id);
-
             return new MostrarTarefaDto(t.Titulo, t.Prioridade, t.DataCriacao, t.DataConclusao, t.EstaConcluida, t.PercentualConcluido, t.Itens, t.Id);
         }).ToList();
     }
