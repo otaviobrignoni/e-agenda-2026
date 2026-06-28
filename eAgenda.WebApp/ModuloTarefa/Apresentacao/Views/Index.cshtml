@@ -1,7 +1,16 @@
-﻿@{
-    ViewBag.Titulo = "Listagem de Tarefas";
-}
+@using eAgenda.WebApp.ModuloTarefa.Dominio
 @model List<MostrarTarefaViewModel>
+
+@{
+    ViewBag.Titulo = "Listagem de Tarefas";
+
+    var prioridadesOrdenadas = new[]
+    {
+        PrioridadeTarefa.Alta,
+        PrioridadeTarefa.Normal,
+        PrioridadeTarefa.Baixa
+    };
+}
 
 <partial name="_BotaoCadastrar" />
 
@@ -9,45 +18,68 @@
 {
     <partial name="_Alerta" model="@new AlertaViewModel(mensagemErro, true)" />
 }
+
+<div class="border rounded-4 p-3 mb-3 bg-light">
+    <div class="row g-3 align-items-end">
+        <div class="col-12 col-md-4">
+            <label class="form-label" for="filtroStatus">Status</label>
+            <select id="filtroStatus" class="form-select">
+                <option value="">Todas</option>
+                <option value="Pendente">Pendentes</option>
+                <option value="Concluida">Concluidas</option>
+            </select>
+        </div>
+        <div class="col-12 col-md-4">
+            <label class="form-label" for="filtroPrioridade">Prioridade</label>
+            <select id="filtroPrioridade" class="form-select">
+                <option value="">Todas</option>
+                @foreach (var prioridade in Html.GetEnumSelectList<PrioridadeTarefa>())
+                {
+                    <option value="@prioridade.Value">@prioridade.Text</option>
+                }
+            </select>
+        </div>
+        <div class="col-12 col-md-4">
+            <label class="form-label" for="agrupamentoPrioridade">Agrupar</label>
+            <select id="agrupamentoPrioridade" class="form-select">
+                <option value="">Sem agrupamento</option>
+                <option value="prioridade">Por prioridade</option>
+            </select>
+        </div>
+    </div>
+</div>
+
 @if (Model.Count == 0)
 {
     <partial name="_Alerta" model="@(new AlertaViewModel("Nenhuma tarefa cadastrada."))" />
 }
 else
 {
-    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-2">
-        @foreach (var t in Model)
-        {
-            var percentualConcluido = Math.Clamp(t.PercentualConcluido * 100, 0, 100);
+    <div id="mensagemFiltroVazio" class="d-none">
+        <partial name="_Alerta" model="@(new AlertaViewModel("Nenhuma tarefa encontrada."))" />
+    </div>
 
-            <div class="col-12 col-md-6 col-xl-4">
-                <div class="card h-100 shadow-sm border-1 rounded-4">
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h5 class="card-title mb-0">@t.Titulo</h5>
-                            <span class="badge rounded-pill @t.ClassePrioridade">
-                                @t.Prioridade
-                            </span>
-                        </div>
-                        <p class="text-muted small mb-3"> Criada em @t.DataCriacao.ToShortDateString() </p>
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between small mb-1">
-                                <span>
-                                    Progresso @if (t.EstaConcluida && t.DataConclusao is not null)
-                                    {
-                                        <span class="text-muted small text-start"> Concluida em @t.DataConclusao.Value.ToShortDateString() </span>
-                                    }
-                                </span>
-                                <span>@percentualConcluido.ToString("0", CultureInfo.CurrentCulture)%</span>
-                            </div>
-                            <div class="progress" style="height: 8px;">
-                                <div class="progress-bar" role="progressbar" style="width: @percentualConcluido.ToString("0.##", CultureInfo.InvariantCulture)%" aria-valuenow="@percentualConcluido.ToString("0.##", CultureInfo.InvariantCulture)" aria-valuemin="0" aria-valuemax="100"> </div>
-                            </div>
-                        </div>
-                        <partial name="_CardAcoes" model="(t.Id, true, true)" />
-                    </div>
-                </div>
-            </div>
+    <div id="listaTarefas" class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-2">
+        @foreach (var tarefa in Model)
+        {
+            <partial name="_CardTarefa" model="tarefa" />
         }
     </div>
+
+    <div id="gruposTarefas" class="d-none">
+        @foreach (var prioridade in prioridadesOrdenadas)
+        {
+            <section class="mb-4" data-grupo-prioridade="@((int)prioridade)">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h2 class="h5 mb-0">Prioridade @prioridade</h2>
+                    <span class="text-muted small" data-grupo-contador>0 tarefa(s)</span>
+                </div>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-2" data-grupo-lista></div>
+            </section>
+        }
+    </div>
+}
+
+@section Scripts {
+    <script src="~/js/tarefa-index.js" asp-append-version="true"></script>
 }
