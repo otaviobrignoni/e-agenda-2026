@@ -27,7 +27,6 @@
     <Folder Include="ModuloHome\" />
     <Folder Include="ModuloHome\Views\" />
     <Folder Include="ModuloTarefa\Aplicacao\" />
-    <Folder Include="ModuloTarefa\Apresentacao\Views\" />
     <Folder Include="ModuloTarefa\Infra\" />
   </ItemGroup>
 

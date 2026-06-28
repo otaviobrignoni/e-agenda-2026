@@ -5,6 +5,12 @@ namespace eAgenda.WebApp.ModuloTarefa.Aplicacao;
 
 public class ServicoTarefa(IRepositorioTarefa repositorioTarefa)
 {
+    public Result Cadastrar(TarefaDto dto)
+    {
+        var tarefa = new Tarefa(dto.Titulo, dto.Prioridade);
+        repositorioTarefa.Cadastrar(tarefa);
+        return Result.Ok();
+    }
     public List<MostrarTarefaDto> Selecionar()
     {
         return repositorioTarefa.Registros.Select(t =>

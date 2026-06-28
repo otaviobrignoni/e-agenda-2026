@@ -1,0 +1,3 @@
+﻿@model TarefaViewModel
+<partial name="_FormCampo" model="@Model.ConvertToFormField(vm => vm.Titulo, "text")" />
+<partial name="_FormSelect" model="@Model.ConvertToFormSelect(vm => vm.Prioridade, "Prioridade")" />
