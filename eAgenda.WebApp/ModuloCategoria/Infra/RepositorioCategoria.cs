@@ -16,7 +16,7 @@ public class RepositorioCategoria : RepositorioSql<Categoria, Categoria>, IRepos
     public void Cadastrar(Categoria registro)
     {
         string sqlQuery = """
-            INSERT INTO dbo.TBCategoria (Titulo)
+            INSERT INTO dbo.TBCategoria (Id, Titulo)
             VALUES (@Id, @Titulo)
         """;
 
