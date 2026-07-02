@@ -25,7 +25,7 @@ else
                 p.DisplayField(vm => vm.Cargo),
                 p.DisplayField(vm => vm.Empresa)
             };
-            <partial name="_Card" model="(p.DisplayField(vm => vm.Id.ToShortString(), p.Nome), campos, p.Id, false)" />
+            <partial name="_Card" model="(p.DisplayField(vm => vm.Id.ToShortString(), p.Nome), campos, p.Id, false, true)" />
         }
     </div>
 }

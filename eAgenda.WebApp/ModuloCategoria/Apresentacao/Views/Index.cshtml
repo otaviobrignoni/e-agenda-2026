@@ -23,7 +23,7 @@ else
             var campos = new[] {
                 p.DisplayField(vm => vm.Titulo)
             };
-            <partial name="_Card" model="(p.DisplayField(vm => vm.Id.ToShortString(), p.Titulo), campos, p.Id, false)" />
+            <partial name="_Card" model="(p.DisplayField(vm => vm.Id.ToShortString(), p.Titulo), campos, p.Id, false, true)" />
         }
     </div>
 }
