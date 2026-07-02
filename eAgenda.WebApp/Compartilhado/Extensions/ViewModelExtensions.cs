@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using System.ComponentModel.DataAnnotations;
 using eAgenda.WebApp.Compartilhado.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -18,6 +19,26 @@ public static class ViewModelExtensions
     {
         var name = GetMemberName(expression.Body) ?? throw new ArgumentException($"Could not determine the field name from expression '{expression}'.", nameof(expression));
         var value = expression.Compile()(model);
+
+        return new FormSelectViewModel(name, label ?? name, value, options, placeholder);
+    }
+
+    public static FormSelectViewModel ConvertToFormSelect<TModel, TValue>(this TModel model, Expression<Func<TModel, TValue>> expression, string? label = null, string? placeholder = null)
+    {
+        var name = GetMemberName(expression.Body) ?? throw new ArgumentException($"Could not determine the field name from expression '{expression}'.", nameof(expression));
+        var value = expression.Compile()(model);
+        var valueType = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
+
+        if (!valueType.IsEnum)
+            throw new ArgumentException($"The expression '{expression}' must point to an enum property.", nameof(expression));
+
+        var options = Enum.GetValues(valueType)
+            .Cast<Enum>()
+            .Select(enumValue => new SelectListItem
+            {
+                Value = enumValue.ToString(),
+                Text = GetEnumDisplayName(enumValue)
+            });
 
         return new FormSelectViewModel(name, label ?? name, value, options, placeholder);
     }
@@ -51,5 +72,15 @@ public static class ViewModelExtensions
             UnaryExpression unary => GetMemberName(unary.Operand),
             _ => null
         };
+    }
+
+    private static string GetEnumDisplayName(Enum enumValue)
+    {
+        var field = enumValue.GetType().GetField(enumValue.ToString());
+        var displayAttribute = field?.GetCustomAttributes(typeof(DisplayAttribute), false)
+            .OfType<DisplayAttribute>()
+            .FirstOrDefault();
+
+        return displayAttribute?.Name ?? enumValue.ToString();
     }
 }

@@ -23,6 +23,14 @@ public abstract class RepositorioSql<TRegistro, TRow>(ISqlConnectionFactory conn
         return conexao.Execute(sqlQuery, new { Id = id });
     }
 
+    protected int Execute(string sqlQuery, object parametros)
+    {
+        using SqlConnection conexao = connectionFactory.CreateConnection();
+        conexao.Open();
+
+        return conexao.Execute(sqlQuery, parametros);
+    }
+
     protected IEnumerable<TRegistro> Query(string sqlQuery, Func<TRegistro, bool>? filtro = null)
     {
         using SqlConnection conexao = connectionFactory.CreateConnection();
@@ -31,6 +39,19 @@ public abstract class RepositorioSql<TRegistro, TRow>(ISqlConnectionFactory conn
         return conexao.Query<TRow>(sqlQuery).Select(Mapear).Where(filtro ?? (_ => true))!;
     }
 
+    protected IEnumerable<T> Query<T>(string sqlQuery, Guid id = default)
+    {
+        using SqlConnection conexao = connectionFactory.CreateConnection();
+        conexao.Open();
+        return conexao.Query<T>(sqlQuery, new { Id = id }).ToList(); ;
+    }
+
+    protected IEnumerable<T> Query<T>(string sqlQuery, object parametros)
+    {
+        using SqlConnection conexao = connectionFactory.CreateConnection();
+        conexao.Open();
+        return conexao.Query<T>(sqlQuery, parametros).ToList();
+    }
 
     protected TRegistro? QuerySingle(string sqlQuery, Guid id)
     {
@@ -43,6 +64,13 @@ public abstract class RepositorioSql<TRegistro, TRow>(ISqlConnectionFactory conn
             return null;
 
         return Mapear(row);
+    }
+
+    protected T QuerySingle<T>(string sqlQuery, Guid id)
+    {
+        using SqlConnection conexao = connectionFactory.CreateConnection();
+        conexao.Open();
+        return conexao.QuerySingle<T>(sqlQuery, new { Id = id });
     }
 
     private TRegistro Mapear(TRow row)

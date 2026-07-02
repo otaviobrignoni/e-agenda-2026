@@ -1,6 +1,6 @@
-﻿@model DisplayFieldViewModel
-<dt class="col-sm-4 fw-bold text-secondary text-uppercase small">@Model.Label</dt>
-<dd class="col-sm-8">
+@model DisplayFieldViewModel
+<dt class="col-sm-4 text-muted small">@Model.Label</dt>
+<dd class="col-sm-8 small mb-1">
     @if (Model.Value is Microsoft.AspNetCore.Html.IHtmlContent htmlContent)
     {
         @htmlContent

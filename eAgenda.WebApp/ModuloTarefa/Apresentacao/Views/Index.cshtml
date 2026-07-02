@@ -1,0 +1,85 @@
+@using eAgenda.WebApp.ModuloTarefa.Dominio
+@model List<MostrarTarefaViewModel>
+
+@{
+    ViewBag.Titulo = "Listagem de Tarefas";
+
+    var prioridadesOrdenadas = new[]
+    {
+        PrioridadeTarefa.Alta,
+        PrioridadeTarefa.Normal,
+        PrioridadeTarefa.Baixa
+    };
+}
+
+<partial name="_BotaoCadastrar" />
+
+@if (TempData["MensagemErro"] is string mensagemErro)
+{
+    <partial name="_Alerta" model="@new AlertaViewModel(mensagemErro, true)" />
+}
+
+<div class="border rounded-4 p-3 mb-3 bg-light">
+    <div class="row g-3 align-items-end">
+        <div class="col-12 col-md-4">
+            <label class="form-label" for="filtroStatus">Status</label>
+            <select id="filtroStatus" class="form-select">
+                <option value="">Todas</option>
+                <option value="Pendente">Pendentes</option>
+                <option value="Concluida">Concluidas</option>
+            </select>
+        </div>
+        <div class="col-12 col-md-4">
+            <label class="form-label" for="filtroPrioridade">Prioridade</label>
+            <select id="filtroPrioridade" class="form-select">
+                <option value="">Todas</option>
+                @foreach (var prioridade in Html.GetEnumSelectList<PrioridadeTarefa>())
+                {
+                    <option value="@prioridade.Value">@prioridade.Text</option>
+                }
+            </select>
+        </div>
+        <div class="col-12 col-md-4">
+            <label class="form-label" for="agrupamentoPrioridade">Agrupar</label>
+            <select id="agrupamentoPrioridade" class="form-select">
+                <option value="">Sem agrupamento</option>
+                <option value="prioridade">Por prioridade</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+@if (Model.Count == 0)
+{
+    <partial name="_Alerta" model="@(new AlertaViewModel("Nenhuma tarefa cadastrada."))" />
+}
+else
+{
+    <div id="mensagemFiltroVazio" class="d-none">
+        <partial name="_Alerta" model="@(new AlertaViewModel("Nenhuma tarefa encontrada."))" />
+    </div>
+
+    <div id="listaTarefas" class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-2">
+        @foreach (var tarefa in Model)
+        {
+            <partial name="_CardTarefa" model="tarefa" />
+        }
+    </div>
+
+    <div id="gruposTarefas" class="d-none">
+        @foreach (var prioridade in prioridadesOrdenadas)
+        {
+            <section class="mb-4" data-grupo-prioridade="@((int)prioridade)">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h2 class="h5 mb-0">Prioridade @prioridade</h2>
+                    <span class="text-muted small" data-grupo-contador>0 tarefa(s)</span>
+                </div>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-2" data-grupo-lista></div>
+            </section>
+        }
+    </div>
+}
+
+@section Scripts {
+    <script src="~/js/tarefa-index.js" asp-append-version="true"></script>
+}
