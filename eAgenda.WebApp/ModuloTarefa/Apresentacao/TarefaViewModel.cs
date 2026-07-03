@@ -32,8 +32,8 @@ public record MostrarTarefaViewModel(
 };
 
 public record ItemTarefaViewModel(
-    [Required(ErrorMessage = "O campo \"Título\" deve ser preenchido")]
-    [StringLength(100, MinimumLength = 2, ErrorMessage = "O campo \"Título\" deve conter entre 2 e 100 caracteres.")]
+    [Required(ErrorMessage = "O item deve ter um título.")]
+    [StringLength(100, MinimumLength = 2, ErrorMessage = "O título deve ter entre 2 e 100 caractéres")]
     string Titulo,
     bool EstaConcluido = false,
     Guid TarefaId = default,
@@ -41,6 +41,6 @@ public record ItemTarefaViewModel(
 );
 
 public record EditarItensViewModel(
-    Guid TarefaId, 
+    Guid TarefaId,
     List<ItemTarefaViewModel> Itens
 );
