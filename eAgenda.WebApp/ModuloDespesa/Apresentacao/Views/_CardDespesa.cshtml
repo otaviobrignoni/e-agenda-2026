@@ -1,0 +1,27 @@
+﻿@model DespesaViewModel
+@{
+    var campos = new[] {
+                Model.DisplayField(vm => vm.Descricao.Truncar(25),"Descrição"),
+                Model.DisplayField(vm => vm.Valor.ToString("C2")),
+                Model.DisplayField(vm => vm.FormaPagamento, "Forma de Pagamento")
+            };
+}
+<div class="col-12 col-md-6 col-xl-4">
+    <div class="card h-100 shadow-sm border-1 rounded-4">
+        <div class="card-body d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h5 class="card-title mb-0">@Model.Data.ToShortDateString()</h5>
+                <div class="d-flex justify-content-end align-items-start">
+                    @foreach (var cvm in Model.Categorias)
+                    {
+                        <span class="badge rounded-pill text-bg-primary ms-1">
+                            @cvm.Titulo
+                        </span>
+                    }
+                </div>
+            </div>
+            <partial name="_CardCampos" model="@campos" />
+            <partial name="_CardAcoes" model="(Model.Id, false, true)" />
+        </div>
+    </div>
+</div>

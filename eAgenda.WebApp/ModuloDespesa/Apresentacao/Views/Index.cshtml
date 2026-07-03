@@ -1,0 +1,23 @@
+﻿@{
+    ViewBag.Titulo = "Listagem de Despesas";
+}
+@model List<DespesaViewModel>
+<partial name="_BotaoCadastrar" />
+@if (TempData["MensagemErro"] is string mensagemErro)
+{
+    <partial name="_Alerta" model="@new AlertaViewModel(mensagemErro, true)" />
+}
+@if (Model.Count == 0)
+{
+    <partial name="_Alerta" model="@(new AlertaViewModel("Nenhuma despesa cadastrada."))" />
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-2">
+        @foreach (var dvm in Model)
+        {
+            <partial name="_CardDespesa" model="@dvm" />
+        }
+    </div>
+}
+

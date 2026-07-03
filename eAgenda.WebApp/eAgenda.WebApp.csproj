@@ -35,6 +35,7 @@
     <Folder Include="ModuloDespesa\" />
     <Folder Include="ModuloDespesa\Aplicacao\" />
     <Folder Include="ModuloDespesa\Apresentacao\" />
+    <Folder Include="ModuloDespesa\Apresentacao\Views\" />
     <Folder Include="ModuloDespesa\Dominio\" />
     <Folder Include="ModuloDespesa\Infra\" />
     <Folder Include="ModuloHome\" />

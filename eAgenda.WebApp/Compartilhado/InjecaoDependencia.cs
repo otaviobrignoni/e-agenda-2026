@@ -10,6 +10,9 @@ using eAgenda.WebApp.ModuloCategoria.Infra;
 using eAgenda.WebApp.ModuloContato.Aplicacao;
 using eAgenda.WebApp.ModuloContato.Dominio;
 using eAgenda.WebApp.ModuloContato.Infra;
+using eAgenda.WebApp.ModuloDespesa.Aplicacao;
+using eAgenda.WebApp.ModuloDespesa.Dominio;
+using eAgenda.WebApp.ModuloDespesa.Infra;
 
 namespace eAgenda.WebApp.Compartilhado;
 
@@ -53,6 +56,7 @@ public static class InjecaoDependencia
         services.AddScoped<IRepositorioItemTarefa, RepositorioItemTarefa>();
         services.AddScoped<IRepositorioCategoria, RepositorioCategoria>();
         services.AddScoped<IRepositorioContato, RepositorioContato>();
+        services.AddScoped<IRepositorioDespesa, RepositorioDespesa>();
     }
 
     // Camada de Aplicação
@@ -65,5 +69,6 @@ public static class InjecaoDependencia
         services.AddScoped<ServicoItemTarefa>();
         services.AddScoped<ServicoCategoria>();
         services.AddScoped<ServicoContato>();
+        services.AddScoped<ServicoDespesa>();
     }
 }
