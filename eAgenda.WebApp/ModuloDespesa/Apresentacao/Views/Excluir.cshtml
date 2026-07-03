@@ -1,0 +1,16 @@
+﻿@{
+    ViewBag.Titulo = "Exclusão de despesa";
+    var campos = new[] {
+        Model.DisplayField(vm => vm.Id),
+        Model.DisplayField(vm => vm.Descricao,"Descrição"),
+        Model.DisplayField(vm => vm.Data.ToShortDateString()),
+        Model.DisplayField(vm => vm.Valor.ToString("C2")),
+        Model.DisplayField(vm => vm.FormaPagamento, "Forma de Pagamento")
+    };
+}
+@model MostrarDespesaViewModel
+<form class="card border-primary-subtle shadow-sm mx-auto p-4" style="max-width: 620px;" asp-action="Excluir" asp-route-id="@Model.Id" method="post">
+    <partial name="_Alerta" model="@(new AlertaViewModel("Tem certeza que deseja excluir esta despesa?"))" />
+    <partial name="_CardCampos" model="@campos" />
+    <partial name="_FormAcoes" />
+</form>

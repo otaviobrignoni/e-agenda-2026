@@ -51,7 +51,7 @@ public class DespesaController(ServicoDespesa servicoDespesa, ServicoCategoria s
     [HttpGet]
     public ActionResult Editar(Guid id)
     {
-        var resultado = servicoDespesa.Selecionar(id);
+        var resultado = servicoDespesa.Selecionar<DespesaDto>(id);
 
         if (resultado.IsFailed)
         {
@@ -77,6 +77,33 @@ public class DespesaController(ServicoDespesa servicoDespesa, ServicoCategoria s
         {
             ModelState.AddModelError(resultado);
             return View(vm with { CategoriasSelecionaveis = SelecionarCategorias() });
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public ActionResult Excluir(Guid id)
+    {
+        var resultado = servicoDespesa.Selecionar<MostrarDespesaDto>(id);
+        if (resultado.IsFailed)
+        {
+            TempData.AddErrorMessage(resultado);
+            return RedirectToAction(nameof(Index));
+        }
+        var vm = mapper.Map<MostrarDespesaViewModel>(resultado.Value);
+        return View(vm);
+    }
+
+    [HttpPost]
+    public ActionResult Excluir(MostrarDespesaViewModel vm)
+    {
+        var resultado = servicoDespesa.Excluir(vm.Id);
+
+        if (resultado.IsFailed)
+        {
+            ModelState.AddModelError(resultado);
+            return View(vm);
         }
 
         return RedirectToAction(nameof(Index));

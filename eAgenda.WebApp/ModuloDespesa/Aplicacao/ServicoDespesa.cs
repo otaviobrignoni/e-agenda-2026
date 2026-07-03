@@ -34,14 +34,22 @@ public class ServicoDespesa(IRepositorioDespesa repositorioDespesa, IRepositorio
         return Result.Ok();
     }
 
-    public Result<DespesaDto> Selecionar(Guid id)
+    public Result Excluir(Guid id)
+    {
+        if (!repositorioDespesa.Excluir(id))
+            return Result.Fail("Despesa não encontrada.");
+
+        return Result.Ok();
+    }
+
+    public Result<TDto> Selecionar<TDto>(Guid id) where TDto : DespesaDtoBase<TDto>
     {
         var despesa = repositorioDespesa.Selecionar(id);
 
         if (despesa is null)
             return Result.Fail("Despesa não encontrada.");
 
-        return Result.Ok(mapper.Map<DespesaDto>(despesa));
+        return Result.Ok(mapper.Map<TDto>(despesa));
     }
 
     public List<MostrarDespesaDto> Selecionar()
