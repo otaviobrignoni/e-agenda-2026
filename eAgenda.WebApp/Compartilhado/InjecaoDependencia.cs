@@ -26,8 +26,8 @@ public static class InjecaoDependencia
             // Resetar a configuração padrão do MVC
             options.ViewLocationFormats.Clear();
 
-            // Views dos módulos: /ModuloCaixa/Views/Listar.cshtml
-            // Views dos módulos: /ModuloCaixa/Apresentacao/Views/Listar.cshtml
+            // Views dos módulos: /ModuloContato/Views/Index.cshtml
+            // Views dos módulos: /ModuloContato/Apresentacao/Views/Index.cshtml
             options.ViewLocationFormats.Add("/Modulo{1}/Views/{0}.cshtml");
             options.ViewLocationFormats.Add("/Modulo{1}/Apresentacao/Views/{0}.cshtml");
 

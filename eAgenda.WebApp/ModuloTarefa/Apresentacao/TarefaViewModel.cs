@@ -5,7 +5,7 @@ namespace eAgenda.WebApp.ModuloTarefa.Apresentacao;
 
 public record TarefaViewModel(
     [Required(ErrorMessage = "O campo \"Título\" deve ser preenchido")]
-    [StringLength(100, MinimumLength = 2, ErrorMessage =" O campo \"Título\" deve conter entre 2 e 100 caracteres.")]
+    [StringLength(100, MinimumLength = 2, ErrorMessage = "O campo \"Título\" deve conter entre 2 e 100 caracteres.")]
     string Titulo,
     [Required(ErrorMessage = "O campo \"Prioridade\" deve ser preenchido")]
     PrioridadeTarefa Prioridade,
@@ -33,7 +33,7 @@ public record MostrarTarefaViewModel(
 
 public record ItemTarefaViewModel(
     [Required(ErrorMessage = "O item deve ter um título.")]
-    [StringLength(100, MinimumLength = 2, ErrorMessage = "O título deve ter entre 2 e 100 caractéres")]
+    [StringLength(100, MinimumLength = 2, ErrorMessage = "O título deve ter entre 2 e 100 caracteres.")]
     string Titulo,
     bool EstaConcluido = false,
     Guid TarefaId = default,

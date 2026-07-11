@@ -9,14 +9,14 @@ public class RepositorioTarefa(ISqlConnectionFactory connectionFactory, IMapper 
 {
     public List<Tarefa> Registros => Selecionar();
 
-    public void Cadastrar(Tarefa tarefa)
+    public bool Cadastrar(Tarefa tarefa)
     {
         string sqlQuery = """
             INSERT INTO dbo.TBTarefa (Id, Titulo, Prioridade, DataCriacao, DataConclusao)
             VALUES (@Id, @Titulo, @Prioridade, @DataCriacao, @DataConclusao)
         """;
 
-        Execute(sqlQuery, tarefa);
+        return Execute(sqlQuery, tarefa);
     }
 
     public bool Editar(Guid id, Tarefa tarefaEditada)
@@ -27,14 +27,12 @@ public class RepositorioTarefa(ISqlConnectionFactory connectionFactory, IMapper 
             UPDATE dbo.TBTarefa
             SET
                 Titulo = @Titulo,
-                Prioridade = @Prioridade,
-                DataCriacao = @DataCriacao,
-                DataConclusao = @DataConclusao
+                Prioridade = @Prioridade
             WHERE Id = @Id;
 
         """;
 
-        return Execute(sqlQuery, tarefaEditada) == 1;
+        return Execute(sqlQuery, tarefaEditada);
     }
 
     public bool Excluir(Guid id)
@@ -44,7 +42,7 @@ public class RepositorioTarefa(ISqlConnectionFactory connectionFactory, IMapper 
             WHERE Id = @Id;
         """;
 
-        return Execute(sqlQuery, id) == 1;
+        return Execute(sqlQuery, id);
     }
 
     public Tarefa? Selecionar(Guid id)
@@ -57,8 +55,7 @@ public class RepositorioTarefa(ISqlConnectionFactory connectionFactory, IMapper 
 
         var tarefa = QuerySingle(sqlQuery, id);
 
-        if (tarefa is not null)
-            tarefa.Itens = repositorioItemTarefa.Selecionar(tarefa);
+        tarefa?.Itens = repositorioItemTarefa.Selecionar(tarefa);
 
         return tarefa;
     }
@@ -77,5 +74,16 @@ public class RepositorioTarefa(ISqlConnectionFactory connectionFactory, IMapper 
             tarefa.Itens = repositorioItemTarefa.Selecionar(tarefa);
 
         return tarefas;
+    }
+
+    public bool AtualizarDataConclusao(Tarefa tarefa)
+    {
+        const string sqlTarefa = """
+            UPDATE dbo.TBTarefa
+            SET DataConclusao = @DataConclusao
+            WHERE Id = @Id;
+        """;
+
+        return Execute(sqlTarefa, tarefa);
     }
 }

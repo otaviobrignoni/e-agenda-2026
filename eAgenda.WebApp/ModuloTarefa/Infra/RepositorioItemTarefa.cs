@@ -17,40 +17,66 @@ public class RepositorioItemTarefa(ISqlConnectionFactory connectionFactory, IMap
             ORDER BY Titulo;
         """;
 
-        var rows = Query<ItemTarefaRow>(sqlQuery, tarefa.Id).ToList();
-
-        return rows.Select(r => new ItemTarefa(r.Titulo, tarefa, r.EstaConcluido) { Id = r.Id }).ToList();
+        return Query(
+            sqlQuery,
+            new { Id = tarefa.Id },
+            ("Tarefa", tarefa)
+        ).ToList();
     }
 
-    public void Cadastrar(ItemTarefa item)
+    public bool Cadastrar(ItemTarefa item)
     {
-        string sqlQuery = """
+        const string sqlQuery = """
             INSERT INTO dbo.TBItemTarefa (Id, Titulo, EstaConcluido, TarefaId)
             VALUES (@Id, @Titulo, @EstaConcluido, @TarefaId);
         """;
 
-        Execute(sqlQuery, item);
+        return Execute(sqlQuery, item);
     }
 
     public bool Excluir(ItemTarefa item)
     {
-        string sqlQuery = """
+        const string sqlQuery = """
             DELETE FROM dbo.TBItemTarefa
             WHERE Id = @Id;
         """;
 
-        return Execute(sqlQuery, item) == 1;
+        return Execute(sqlQuery, item);
     }
 
-    public bool Editar(ItemTarefa item)
+    public bool EditarItens(
+        IReadOnlyCollection<ItemTarefa> itensExcluidos,
+        IReadOnlyCollection<ItemTarefa> itensAdicionados,
+        IReadOnlyCollection<ItemTarefa> itensEditados)
     {
-        string sqlQuery = """
+        const string sqlExcluir = """
+            DELETE FROM dbo.TBItemTarefa
+            WHERE Id = @Id;
+        """;
+
+        const string sqlCadastrar = """
+            INSERT INTO dbo.TBItemTarefa (Id, Titulo, EstaConcluido, TarefaId)
+            VALUES (@Id, @Titulo, @EstaConcluido, @TarefaId);
+        """;
+
+        const string sqlEditar = """
             UPDATE dbo.TBItemTarefa
             SET EstaConcluido = @EstaConcluido
             WHERE Id = @Id;
         """;
 
-        return Execute(sqlQuery, item) == 1;
+        var comandos = new List<(string SqlQuery, object? Parametros)>();
+
+        AdicionarComandos(sqlExcluir, itensExcluidos);
+        AdicionarComandos(sqlCadastrar, itensAdicionados);
+        AdicionarComandos(sqlEditar, itensEditados);
+
+        return Execute([.. comandos]);
+
+        void AdicionarComandos(string sqlQuery, IReadOnlyCollection<ItemTarefa> itens)
+        {
+            comandos.AddRange(itens.Select(item => (sqlQuery, (object?)item)));
+        }
     }
 }
 

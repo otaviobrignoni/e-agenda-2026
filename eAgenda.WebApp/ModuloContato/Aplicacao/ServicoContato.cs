@@ -1,4 +1,3 @@
-using System.Diagnostics.Eventing.Reader;
 using eAgenda.WebApp.ModuloContato.Dominio;
 using FluentResults;
 
@@ -9,33 +8,39 @@ public class ServicoContato(IRepositorioContato repositorioContato)
     public Result Cadastrar(ContatoDto dto)
     {
         string textoFalha = "Já existe um contato com esse ";
+        var contatos = repositorioContato.Selecionar();
+        var falhas = new List<IError>();
 
-        if (repositorioContato.Selecionar().Any(c => c.Email == dto.Email && c.Telefone == dto.Telefone))
-            return Falha("Email", textoFalha + "Email e Telefone");
+        if (contatos.Any(c => c.Email == dto.Email))
+            falhas.Add(ErroDeCampo(nameof(dto.Email), textoFalha + "email"));
 
-        if (repositorioContato.Selecionar().Any(c => c.Email == dto.Email))
-            return Falha("Email", textoFalha + "Email");
+        if (contatos.Any(c => c.Telefone == dto.Telefone))
+            falhas.Add(ErroDeCampo(nameof(dto.Telefone), textoFalha + "telefone"));
 
-        if (repositorioContato.Selecionar().Any(c => c.Telefone == dto.Telefone))
-            return Falha("Email", textoFalha + "Telefone");
+        if (falhas.Count > 0)
+            return Result.Fail(falhas);
 
         var contato = new Contato(dto.Nome, dto.Email, dto.Telefone, dto.Cargo, dto.Empresa);
-        repositorioContato.Cadastrar(contato);
+        if (!repositorioContato.Cadastrar(contato))
+            return Result.Fail("Não foi possível cadastrar o contato.");
+
         return Result.Ok();
     }
 
     public Result Editar(ContatoDto dto)
     {
         string textoFalha = "Já existe um contato com esse ";
+        var outrosContatos = repositorioContato.Selecionar(c => dto.Id != c.Id);
+        var falhas = new List<IError>();
 
-        if (repositorioContato.Selecionar(c => dto.Id != c.Id).Any(c => c.Email == dto.Email && c.Telefone == dto.Telefone))
-            return Falha("Email", textoFalha + "Email e Telefone");
+        if (outrosContatos.Any(c => c.Email == dto.Email))
+            falhas.Add(ErroDeCampo(nameof(dto.Email), textoFalha + "email"));
 
-        if (repositorioContato.Selecionar(c => dto.Id != c.Id).Any(c => c.Email == dto.Email))
-            return Falha("Email", textoFalha + "Email");
+        if (outrosContatos.Any(c => c.Telefone == dto.Telefone))
+            falhas.Add(ErroDeCampo(nameof(dto.Telefone), textoFalha + "telefone"));
 
-        if (repositorioContato.Selecionar(c => dto.Id != c.Id).Any(c => c.Telefone == dto.Telefone))
-            return Falha("Email", textoFalha + "Telefone");
+        if (falhas.Count > 0)
+            return Result.Fail(falhas);
 
         var contatoEditado = new Contato(dto.Nome, dto.Email, dto.Telefone, dto.Cargo, dto.Empresa);
         if (!repositorioContato.Editar(dto.Id, contatoEditado))
@@ -53,7 +58,7 @@ public class ServicoContato(IRepositorioContato repositorioContato)
     {
         var contato = repositorioContato.Selecionar(id);
         if (contato is null)
-            return Result.Fail("Contato não encontrada.");
+            return Result.Fail("Contato não encontrado.");
         return Result.Ok(new ContatoDto(contato.Nome, contato.Email, contato.Telefone, contato.Cargo, contato.Empresa, contato.Id));
     }
 
@@ -65,8 +70,8 @@ public class ServicoContato(IRepositorioContato repositorioContato)
         }).ToList();
     }
 
-    private static Result Falha(string campo, string mensagem)
+    private static IError ErroDeCampo(string campo, string mensagem)
     {
-        return Result.Fail(new Error(mensagem).WithMetadata("Campo", campo));
+        return new Error(mensagem).WithMetadata("Campo", campo);
     }
 }

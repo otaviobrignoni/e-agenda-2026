@@ -14,7 +14,10 @@ public class ServicoDespesa(IRepositorioDespesa repositorioDespesa, IRepositorio
         if (resultadoCategorias.IsFailed)
             return Result.Fail(resultadoCategorias.Errors);
 
-        repositorioDespesa.Cadastrar(new Despesa(dto.Descricao, dto.Data, dto.Valor, dto.FormaPagamento, resultadoCategorias.Value));
+        var despesa = new Despesa(dto.Descricao, dto.Data, dto.Valor, dto.FormaPagamento, resultadoCategorias.Value);
+
+        if (!repositorioDespesa.Cadastrar(despesa))
+            return Result.Fail("Não foi possível cadastrar a despesa.");
 
         return Result.Ok();
     }

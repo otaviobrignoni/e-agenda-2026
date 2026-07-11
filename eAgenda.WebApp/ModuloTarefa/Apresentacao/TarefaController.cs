@@ -159,6 +159,16 @@ namespace eAgenda.WebApp.ModuloTarefa.Apresentacao
         [HttpPost]
         public ActionResult EditarItens(EditarItensViewModel vm)
         {
+            if (!ModelState.IsValid)
+            {
+                TempData.AddErrorMessage(Result.Fail(ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .FirstOrDefault(e => !string.IsNullOrWhiteSpace(e))
+                    ?? "Não foi possível validar os itens da tarefa."));
+                return RedirectToAction(nameof(Detalhes), new { id = vm.TarefaId });
+            }
+
             var resultado = servicoItemTarefa.EditarItens(mapper.Map<List<ItemTarefaDto>>(vm.Itens), vm.TarefaId);
 
             if (resultado.IsFailed)

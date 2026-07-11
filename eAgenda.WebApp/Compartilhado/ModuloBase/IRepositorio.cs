@@ -3,7 +3,7 @@ namespace eAgenda.WebApp.Compartilhado.ModuloBase;
 public interface IRepositorio<T> where T : EntidadeBase<T>
 {
     List<T> Registros { get; }
-    void Cadastrar(T registro);
+    bool Cadastrar(T registro);
     bool Editar(Guid id, T registroEditado);
     bool Excluir(Guid id);
     T? Selecionar(Guid id);

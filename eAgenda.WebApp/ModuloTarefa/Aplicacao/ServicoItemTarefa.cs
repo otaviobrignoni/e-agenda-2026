@@ -3,7 +3,9 @@ using FluentResults;
 
 namespace eAgenda.WebApp.ModuloTarefa.Aplicacao;
 
-public class ServicoItemTarefa(IRepositorioTarefa repositorioTarefa, IRepositorioItemTarefa repositorioItemTarefa)
+public class ServicoItemTarefa(
+    IRepositorioTarefa repositorioTarefa,
+    IRepositorioItemTarefa repositorioItemTarefa)
 {
     public Result Cadastrar(ItemTarefaDto dto)
     {
@@ -15,12 +17,15 @@ public class ServicoItemTarefa(IRepositorioTarefa repositorioTarefa, IRepositori
         if (tarefa is null)
             return Result.Fail("Tarefa não encontrada.");
 
-        var item = new ItemTarefa(dto.Titulo, tarefa);
-
-        repositorioItemTarefa.Cadastrar(item);
+        var item = new ItemTarefa(dto.Titulo.Trim(), tarefa);
 
         tarefa.AdicionarItem(item);
-        repositorioTarefa.Editar(tarefa.Id, tarefa);
+
+        if (!repositorioItemTarefa.Cadastrar(item))
+            return Result.Fail("Não foi possível adicionar o item.");
+
+        if (!repositorioTarefa.AtualizarDataConclusao(tarefa))
+            return Result.Fail("Não foi possível atualizar a tarefa.");
 
         return Result.Ok();
     }
@@ -37,11 +42,13 @@ public class ServicoItemTarefa(IRepositorioTarefa repositorioTarefa, IRepositori
         if (item is null)
             return Result.Fail("Item da tarefa não encontrado.");
 
+        tarefa.RemoverItem(item);
+
         if (!repositorioItemTarefa.Excluir(item))
             return Result.Fail("Não foi possível remover o item.");
 
-        tarefa.RemoverItem(item);
-        repositorioTarefa.Editar(tarefa.Id, tarefa);
+        if (!repositorioTarefa.AtualizarDataConclusao(tarefa))
+            return Result.Fail("Não foi possível atualizar a tarefa.");
 
         return Result.Ok();
     }
@@ -54,30 +61,40 @@ public class ServicoItemTarefa(IRepositorioTarefa repositorioTarefa, IRepositori
             return Result.Fail("Tarefa não encontrada.");
 
         var idsSubmetidos = itens.Select(i => i.Id).Where(id => id != Guid.Empty).ToHashSet();
+        var itensExcluidos = tarefa.Itens.Where(i => !idsSubmetidos.Contains(i.Id)).ToList();
+        var itensAdicionados = new List<ItemTarefa>();
+        var itensEditados = new List<ItemTarefa>();
 
-        foreach (var item in tarefa.Itens.Where(i => !idsSubmetidos.Contains(i.Id)).ToList())
-        {
-            repositorioItemTarefa.Excluir(item);
+        foreach (var item in itensExcluidos)
             tarefa.RemoverItem(item);
-        }
 
         foreach (var dto in itens.Where(i => i.Id == Guid.Empty))
         {
-            var novoItem = new ItemTarefa(dto.Titulo, tarefa, dto.EstaConcluido);
-            repositorioItemTarefa.Cadastrar(novoItem);
+            var novoItem = new ItemTarefa(dto.Titulo.Trim(), tarefa, dto.EstaConcluido);
             tarefa.AdicionarItem(novoItem);
+            itensAdicionados.Add(novoItem);
         }
 
         foreach (var dto in itens.Where(i => i.Id != Guid.Empty))
         {
             var item = tarefa.Itens.FirstOrDefault(i => i.Id == dto.Id);
-            if (item is null) continue;
+            if (item is null)
+                return Result.Fail("Item da tarefa não encontrado.");
+
+            if (item.EstaConcluido == dto.EstaConcluido)
+                continue;
+
             item.Atualizar(new ItemTarefa(item.Titulo, item.Tarefa, dto.EstaConcluido));
-            repositorioItemTarefa.Editar(item);
+            itensEditados.Add(item);
         }
 
-        repositorioTarefa.Editar(tarefa.Id, tarefa);
+        if (!repositorioItemTarefa.EditarItens(itensExcluidos, itensAdicionados, itensEditados))
+            return Result.Fail("Não foi possível atualizar os itens da tarefa.");
+
+        if (!repositorioTarefa.AtualizarDataConclusao(tarefa))
+            return Result.Fail("Não foi possível atualizar a tarefa.");
 
         return Result.Ok();
     }
+
 }

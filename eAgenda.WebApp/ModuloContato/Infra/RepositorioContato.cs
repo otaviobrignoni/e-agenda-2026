@@ -13,14 +13,14 @@ public class RepositorioContato : RepositorioSql<Contato, Contato>, IRepositorio
 
     public List<Contato> Registros => Selecionar();
 
-    public void Cadastrar(Contato registro)
+    public bool Cadastrar(Contato registro)
     {
         string sqlQuery = """
             INSERT INTO dbo.TBContato (Id, Nome, Email, Telefone, Cargo, Empresa)
             VALUES (@Id, @Nome, @Email, @Telefone, @Cargo, @Empresa)
         """;
 
-        Execute(sqlQuery, registro);
+        return Execute(sqlQuery, registro);
     }
 
     public bool Editar(Guid id, Contato registroEditado)
@@ -35,9 +35,10 @@ public class RepositorioContato : RepositorioSql<Contato, Contato>, IRepositorio
                 Telefone = @Telefone,
                 Cargo = @Cargo,
                 Empresa = @Empresa
+            WHERE Id = @Id;
         """;
 
-        return Execute(sqlQuery, registroEditado) == 1;
+        return Execute(sqlQuery, registroEditado);
     }
 
     public bool Excluir(Guid id)
@@ -47,7 +48,7 @@ public class RepositorioContato : RepositorioSql<Contato, Contato>, IRepositorio
             WHERE Id = @Id;
         """;
 
-        return Execute(sqlQuery, id) == 1;
+        return Execute(sqlQuery, id);
     }
 
     public Contato? Selecionar(Guid id)
@@ -55,7 +56,7 @@ public class RepositorioContato : RepositorioSql<Contato, Contato>, IRepositorio
         string sqlQuery = """
             SELECT Id, Nome, Email, Telefone, Cargo, Empresa 
             FROM dbo.TBContato
-            ORDER BY Nome;
+            WHERE Id = @Id;
         """;
 
         return QuerySingle(sqlQuery, id);

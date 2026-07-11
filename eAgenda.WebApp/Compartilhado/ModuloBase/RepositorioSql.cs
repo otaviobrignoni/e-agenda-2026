@@ -1,75 +1,164 @@
 using AutoMapper;
 using Dapper;
+using eAgenda.WebApp.Compartilhado.Extensions;
 using eAgenda.WebApp.Compartilhado.Infra;
-using Microsoft.Data.SqlClient;
 
 namespace eAgenda.WebApp.Compartilhado.ModuloBase;
 
 public abstract class RepositorioSql<TRegistro, TRow>(ISqlConnectionFactory connectionFactory, IMapper mapper) where TRegistro : EntidadeBase<TRegistro> where TRow : class
 {
-    protected int Execute(string sqlQuery, TRegistro registro)
+    protected bool Execute(string sqlQuery, TRegistro registro)
     {
-        using SqlConnection conexao = connectionFactory.CreateConnection();
+        using var conexao = connectionFactory.CreateConnection();
         conexao.Open();
+        using var transacao = conexao.BeginTransaction();
 
-        return conexao.Execute(sqlQuery, registro);
+        try
+        {
+            if (conexao.Execute(sqlQuery, registro, transacao) <= 0)
+            {
+                transacao.Rollback();
+                return false;
+            }
+
+            transacao.Commit();
+            return true;
+        }
+        catch
+        {
+            transacao.Rollback();
+            return false;
+        }
     }
 
-    protected int Execute(string sqlQuery, Guid id)
+    protected bool Execute(string sqlQuery, Guid id)
     {
-        using SqlConnection conexao = connectionFactory.CreateConnection();
+        using var conexao = connectionFactory.CreateConnection();
         conexao.Open();
+        using var transacao = conexao.BeginTransaction();
 
-        return conexao.Execute(sqlQuery, new { Id = id });
+        try
+        {
+            if (conexao.Execute(sqlQuery, new { Id = id }, transacao) <= 0)
+            {
+                transacao.Rollback();
+                return false;
+            }
+
+            transacao.Commit();
+            return true;
+        }
+        catch
+        {
+            transacao.Rollback();
+            return false;
+        }
     }
 
-    protected int Execute(string sqlQuery, object parametros)
+    protected bool Execute(string sqlQuery, object parametros)
     {
-        using SqlConnection conexao = connectionFactory.CreateConnection();
+        using var conexao = connectionFactory.CreateConnection();
         conexao.Open();
+        using var transacao = conexao.BeginTransaction();
 
-        return conexao.Execute(sqlQuery, parametros);
+        try
+        {
+            if (conexao.Execute(sqlQuery, parametros, transacao) <= 0)
+            {
+                transacao.Rollback();
+                return false;
+            }
+
+            transacao.Commit();
+            return true;
+        }
+        catch
+        {
+            transacao.Rollback();
+            return false;
+        }
+    }
+
+    protected bool Execute(params (string SqlQuery, object? Parametros)[] comandos)
+    {
+        using var conexao = connectionFactory.CreateConnection();
+        conexao.Open();
+        using var transacao = conexao.BeginTransaction();
+
+        try
+        {
+            foreach (var comando in comandos)
+            {
+                if (conexao.Execute(comando.SqlQuery, comando.Parametros, transacao) > 0)
+                    continue;
+
+                transacao.Rollback();
+                return false;
+            }
+
+            transacao.Commit();
+            return true;
+        }
+        catch
+        {
+            transacao.Rollback();
+            return false;
+        }
     }
 
     protected IEnumerable<TRegistro> Query(string sqlQuery, Func<TRegistro, bool>? filtro = null)
     {
-        using SqlConnection conexao = connectionFactory.CreateConnection();
+        using var conexao = connectionFactory.CreateConnection();
         conexao.Open();
 
-        return conexao.Query<TRow>(sqlQuery).Select(Mapear).Where(filtro ?? (_ => true))!;
+        return conexao.Query<TRow>(sqlQuery).Select(Mapear).Where(filtro ?? (_ => true));
+    }
+
+    protected IEnumerable<TRegistro> Query(
+        string sqlQuery,
+        object parametros,
+        params (string Key, object Value)[] items)
+    {
+        using var conexao = connectionFactory.CreateConnection();
+        conexao.Open();
+
+        return conexao
+            .Query<TRow>(sqlQuery, parametros)
+            .Select(row => mapper.MapWith<TRegistro>(row, items))
+            .ToList();
     }
 
     protected IEnumerable<T> Query<T>(string sqlQuery, Guid? id = null)
     {
-        using SqlConnection conexao = connectionFactory.CreateConnection();
+        using var conexao = connectionFactory.CreateConnection();
         conexao.Open();
-        return conexao.Query<T>(sqlQuery, id is not null ? new { Id = id } : null).ToList(); ;
+
+        return conexao.Query<T>(sqlQuery, id is not null ? new { Id = id } : null);
     }
 
     protected IEnumerable<T> Query<T>(string sqlQuery, object parametros)
     {
-        using SqlConnection conexao = connectionFactory.CreateConnection();
+        using var conexao = connectionFactory.CreateConnection();
         conexao.Open();
+
         return conexao.Query<T>(sqlQuery, parametros).ToList();
     }
 
     protected TRegistro? QuerySingle(string sqlQuery, Guid id)
     {
-        using SqlConnection conexao = connectionFactory.CreateConnection();
+        using var conexao = connectionFactory.CreateConnection();
         conexao.Open();
 
         var row = conexao.QuerySingleOrDefault<TRow>(sqlQuery, new { Id = id });
 
-        if (row is null)
-            return null;
-
-        return Mapear(row);
+        return row is null ? null : Mapear(row);
     }
 
     protected T QuerySingle<T>(string sqlQuery, Guid id)
     {
-        using SqlConnection conexao = connectionFactory.CreateConnection();
+        using var conexao = connectionFactory.CreateConnection();
         conexao.Open();
+
         return conexao.QuerySingle<T>(sqlQuery, new { Id = id });
     }
 

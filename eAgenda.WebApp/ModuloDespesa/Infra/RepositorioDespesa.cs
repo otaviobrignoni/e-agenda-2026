@@ -10,29 +10,34 @@ public class RepositorioDespesa(ISqlConnectionFactory connectionFactory, IMapper
 {
     public List<Despesa> Registros => Selecionar();
 
-    public void Cadastrar(Despesa despesa)
+    public bool Cadastrar(Despesa despesa)
     {
-        string sqlQuery = """
+        const string sqlDespesa = """
             INSERT INTO dbo.TBDespesa (Id, Descricao, Data, Valor, FormaPagamento)
             VALUES (@Id, @Descricao, @Data, @Valor, @FormaPagamento)
         """;
 
-        Execute(sqlQuery, despesa);
-
-        sqlQuery = """
+        const string sqlCategoria = """
             INSERT INTO dbo.TBCategoriaDespesa (CategoriaId, DespesaId)
             VALUES (@CategoriaId, @DespesaId)
         """;
 
-        foreach (var c in despesa.Categorias)
-            Execute(sqlQuery, new { CategoriaId = c.Id, DespesaId = despesa.Id });
+        var comandos = new List<(string SqlQuery, object? Parametros)>
+        {
+            (sqlDespesa, despesa)
+        };
+
+        comandos.AddRange(despesa.Categorias.Select(c =>
+            (sqlCategoria, (object?)new { CategoriaId = c.Id, DespesaId = despesa.Id })));
+
+        return Execute([.. comandos]);
     }
 
     public bool Editar(Guid id, Despesa despesaEditada)
     {
         despesaEditada.Id = id;
 
-        string sqlQuery = """
+        const string sqlDespesa = """
             UPDATE dbo.TBDespesa
             SET
                 Descricao = @Descricao,
@@ -42,43 +47,43 @@ public class RepositorioDespesa(ISqlConnectionFactory connectionFactory, IMapper
             WHERE Id = @Id;
         """;
 
-        bool editou = Execute(sqlQuery, despesaEditada) == 1;
-
-        if (!editou) return false;
-
-        sqlQuery = """
+        const string sqlExcluirCategorias = """
             DELETE FROM dbo.TBCategoriaDespesa
             WHERE DespesaId = @Id;
         """;
 
-        Execute(sqlQuery, id);
-
-        sqlQuery = """
+        const string sqlAdicionarCategoria = """
             INSERT INTO dbo.TBCategoriaDespesa (CategoriaId, DespesaId)
             VALUES (@CategoriaId, @DespesaId)
         """;
 
-        foreach (var c in despesaEditada.Categorias)
-            Execute(sqlQuery, new { CategoriaId = c.Id, DespesaId = id });
+        var comandos = new List<(string SqlQuery, object? Parametros)>
+        {
+            (sqlDespesa, despesaEditada),
+            (sqlExcluirCategorias, new { Id = id })
+        };
 
-        return editou;
+        comandos.AddRange(despesaEditada.Categorias.Select(c =>
+            (sqlAdicionarCategoria, (object?)new { CategoriaId = c.Id, DespesaId = id })));
+
+        return Execute([.. comandos]);
     }
 
     public bool Excluir(Guid id)
     {
-        string sqlQuery = """
+        const string sqlCategorias = """
             DELETE FROM dbo.TBCategoriaDespesa
             WHERE DespesaId = @Id;
         """;
 
-        Execute(sqlQuery, id);
-
-        sqlQuery = """
+        const string sqlDespesa = """
             DELETE FROM dbo.TBDespesa
             WHERE Id = @Id;
         """;
 
-        return Execute(sqlQuery, id) == 1;
+        return Execute(
+            (sqlCategorias, new { Id = id }),
+            (sqlDespesa, new { Id = id }));
     }
 
     public Despesa? Selecionar(Guid id)

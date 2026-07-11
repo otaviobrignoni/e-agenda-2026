@@ -9,7 +9,9 @@ public class ServicoTarefa(IRepositorioTarefa repositorioTarefa, IMapper mapper)
     public Result Cadastrar(TarefaDto dto)
     {
         var tarefa = mapper.Map<Tarefa>(dto);
-        repositorioTarefa.Cadastrar(tarefa);
+        if (!repositorioTarefa.Cadastrar(tarefa))
+            return Result.Fail("Não foi possível cadastrar a tarefa.");
+
         return Result.Ok();
     }
 

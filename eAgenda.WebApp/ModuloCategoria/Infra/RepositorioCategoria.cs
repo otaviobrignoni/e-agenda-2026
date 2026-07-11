@@ -13,14 +13,14 @@ public class RepositorioCategoria : RepositorioSql<Categoria, Categoria>, IRepos
 
     public List<Categoria> Registros => Selecionar();
 
-    public void Cadastrar(Categoria registro)
+    public bool Cadastrar(Categoria registro)
     {
         string sqlQuery = """
             INSERT INTO dbo.TBCategoria (Id, Titulo)
             VALUES (@Id, @Titulo)
         """;
 
-        Execute(sqlQuery, registro);
+        return Execute(sqlQuery, registro);
     }
 
     public bool Editar(Guid id, Categoria registroEditado)
@@ -34,7 +34,7 @@ public class RepositorioCategoria : RepositorioSql<Categoria, Categoria>, IRepos
             WHERE Id = @Id;
         """;
 
-        return Execute(sqlQuery, registroEditado) == 1;
+        return Execute(sqlQuery, registroEditado);
     }
 
     public bool Excluir(Guid id)
@@ -44,7 +44,7 @@ public class RepositorioCategoria : RepositorioSql<Categoria, Categoria>, IRepos
             WHERE Id = @Id;
         """;
 
-        return Execute(sqlQuery, id) == 1;
+        return Execute(sqlQuery, id);
     }
 
     public Categoria? Selecionar(Guid id)
@@ -67,5 +67,16 @@ public class RepositorioCategoria : RepositorioSql<Categoria, Categoria>, IRepos
         """;
 
         return Query(sqlQuery).Where(filtro ?? (t => true)).ToList();
+    }
+
+    public bool PossuiDespesas(Guid id)
+    {
+        const string sqlQuery = """
+            SELECT COUNT(1)
+            FROM dbo.TBCategoriaDespesa
+            WHERE CategoriaId = @Id;
+        """;
+
+        return QuerySingle<int>(sqlQuery, id) > 0;
     }
 }
