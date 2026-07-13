@@ -1,0 +1,135 @@
+using AutoMapper;
+using eAgenda.WebApp.Compartilhado.Infra;
+using eAgenda.WebApp.Compartilhado.ModuloBase;
+using eAgenda.WebApp.ModuloCompromisso.Dominio;
+using eAgenda.WebApp.ModuloContato.Dominio;
+
+namespace eAgenda.WebApp.ModuloCompromisso.Infra;
+
+public class RepositorioCompromisso(ISqlConnectionFactory connectionFactory, IMapper mapper) : RepositorioSql<Compromisso, CompromissoRow>(connectionFactory, mapper), IRepositorioCompromisso
+{
+    public bool Cadastrar(Compromisso compromisso)
+    {
+        string sqlQuery = """
+            INSERT INTO dbo.TBCompromisso (Id, Assunto, Data, HoraInicio, HoraTermino, Tipo, LocalOuLink, ContatoId)
+            VALUES (@Id, @Assunto, @Data, @HoraInicio, @HoraTermino, @Tipo, @LocalOuLink, @ContatoId)
+        """;
+
+        return Execute(sqlQuery, compromisso);
+    }
+
+    public bool Editar(Guid id, Compromisso compromissoEditado)
+    {
+        compromissoEditado.Id = id;
+        
+        string sqlQuery = """
+            UPDATE dbo.TBCompromisso
+            SET
+                Assunto = @Assunto,
+                Data = @Data,
+                HoraInicio = @HoraInicio,
+                HoraTermino = @HoraTermino,
+                Tipo = @Tipo,
+                LocalOuLink = @LocalOuLink,
+                ContatoId = @ContatoId
+            WHERE Id = @Id;
+        """;
+
+        return Execute(sqlQuery, compromissoEditado);
+    }
+
+    public bool Excluir(Guid id)
+    {
+        string sqlQuery = """
+            DELETE FROM dbo.TBCompromisso
+            WHERE Id = @Id;
+        """;
+
+        return Execute(sqlQuery, id);
+    }
+
+    public Compromisso? Selecionar(Guid id)
+    {
+        string sqlQuery = """
+            SELECT
+                compromisso.Id,
+                compromisso.Assunto,
+                compromisso.Data,
+                compromisso.HoraInicio,
+                compromisso.HoraTermino,
+                compromisso.Tipo,
+                compromisso.LocalOuLink,
+                contato.Id AS ContatoId,
+                contato.Nome AS ContatoNome,
+                contato.Email AS ContatoEmail,
+                contato.Telefone AS ContatoTelefone,
+                contato.Cargo AS ContatoCargo,
+                contato.Empresa AS ContatoEmpresa
+            FROM dbo.TBCompromisso AS compromisso
+            LEFT JOIN dbo.TBContato AS contato
+                ON contato.Id = compromisso.ContatoId
+            Where compromisso.Id = @Id;
+        """;
+
+        return QuerySingle(sqlQuery, id);
+    }
+
+    public List<Compromisso> Selecionar(Func<Compromisso, bool>? filtro = null)
+    {
+        string sqlQuery = """
+            SELECT
+                compromisso.Id,
+                compromisso.Assunto,
+                compromisso.Data,
+                compromisso.HoraInicio,
+                compromisso.HoraTermino,
+                compromisso.Tipo,
+                compromisso.LocalOuLink,
+                contato.Id AS ContatoId,
+                contato.Nome AS ContatoNome,
+                contato.Email AS ContatoEmail,
+                contato.Telefone AS ContatoTelefone,
+                contato.Cargo AS ContatoCargo,
+                contato.Empresa AS ContatoEmpresa
+            FROM dbo.TBCompromisso AS compromisso
+            LEFT JOIN dbo.TBContato AS contato
+                ON contato.Id = compromisso.ContatoId
+            ORDER BY compromisso.Assunto;
+        """;
+
+        return [.. Query(sqlQuery).Where(filtro ?? (_ => true))];
+    }
+}
+
+public sealed class CompromissoRow
+{
+    public Guid Id { get; set; }
+    public string Assunto { get; set; } = string.Empty;
+    public DateOnly Data { get; set; }
+    public TimeOnly HoraInicio { get; set; }
+    public TimeOnly HoraTermino { get; set; }
+    public TipoCompromisso Tipo { get; set; }
+    public string LocalOuLink { get; set; } = string.Empty;
+    public Guid? ContatoId { get; set; }
+    public string? ContatoNome { get; set; }
+    public string? ContatoEmail { get; set; }
+    public string? ContatoTelefone { get; set; }
+    public string? ContatoCargo { get; set; }
+    public string? ContatoEmpresa { get; set; }
+
+    public Contato? ExtrairContato()
+    {
+        return ContatoId is null ? null : new Contato(ContatoId.Value, ContatoNome!, ContatoEmail!, ContatoTelefone!, ContatoCargo, ContatoEmpresa);
+    }
+
+    public CompromissoRow() { }
+}
+
+public class CompromissoSqlProfile : Profile
+{
+    public CompromissoSqlProfile()
+    {
+        CreateMap<CompromissoRow, Compromisso>()
+            .ForMember(dest => dest.Contato, opt => opt.MapFrom(src => src.ExtrairContato()));
+    }
+}
