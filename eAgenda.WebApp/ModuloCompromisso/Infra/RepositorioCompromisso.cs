@@ -105,9 +105,9 @@ public sealed class CompromissoRow
 {
     public Guid Id { get; set; }
     public string Assunto { get; set; } = string.Empty;
-    public DateOnly Data { get; set; }
-    public TimeOnly HoraInicio { get; set; }
-    public TimeOnly HoraTermino { get; set; }
+    public DateTime Data { get; set; }
+    public TimeSpan HoraInicio { get; set; }
+    public TimeSpan HoraTermino { get; set; }
     public TipoCompromisso Tipo { get; set; }
     public string LocalOuLink { get; set; } = string.Empty;
     public Guid? ContatoId { get; set; }
@@ -130,6 +130,9 @@ public class CompromissoSqlProfile : Profile
     public CompromissoSqlProfile()
     {
         CreateMap<CompromissoRow, Compromisso>()
-            .ForMember(dest => dest.Contato, opt => opt.MapFrom(src => src.ExtrairContato()));
+            .ForCtorParam("data", opt => opt.MapFrom(src => DateOnly.FromDateTime(src.Data)))
+            .ForCtorParam("horaInicio", opt => opt.MapFrom(src => TimeOnly.FromTimeSpan(src.HoraInicio)))
+            .ForCtorParam("horaTermino", opt => opt.MapFrom(src => TimeOnly.FromTimeSpan(src.HoraTermino)))
+            .ForCtorParam("contato", opt => opt.MapFrom(src => src.ExtrairContato()));
     }
 }
