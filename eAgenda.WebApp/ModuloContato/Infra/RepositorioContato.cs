@@ -1,5 +1,5 @@
 using AutoMapper;
-using eAgenda.WebApp.Compartilhado.Infra;
+using eAgenda.WebApp.Compartilhado.Infra.Sql;
 using eAgenda.WebApp.Compartilhado.ModuloBase;
 using eAgenda.WebApp.ModuloContato.Dominio;
 
@@ -7,8 +7,11 @@ namespace eAgenda.WebApp.ModuloContato.Infra;
 
 public class RepositorioContato : RepositorioSql<Contato, Contato>, IRepositorioContato
 {
-    public RepositorioContato(ISqlConnectionFactory connectionFactory, IMapper mapper) : base(connectionFactory, mapper)
+    private readonly IRepositorioGenerico repositorioGenerico;
+
+    public RepositorioContato(ISqlConnectionFactory connectionFactory, IMapper mapper, IRepositorioGenerico repositorioGenerico) : base(connectionFactory, mapper)
     {
+        this.repositorioGenerico = repositorioGenerico;
     }
 
     public bool Cadastrar(Contato registro)
@@ -69,5 +72,16 @@ public class RepositorioContato : RepositorioSql<Contato, Contato>, IRepositorio
         """;
 
         return [.. Query(sqlQuery).Where(filtro ?? (t => true))];
+    }
+
+    public bool PossuiCompromissos(Guid id)
+    {
+        string sqlQuery = """
+            SELECT COUNT(1)
+            FROM dbo.TBCompromisso
+            WHERE ContatoId = @Id;
+        """;
+
+        return repositorioGenerico.QuerySingle<int>(sqlQuery, id) > 0;
     }
 }

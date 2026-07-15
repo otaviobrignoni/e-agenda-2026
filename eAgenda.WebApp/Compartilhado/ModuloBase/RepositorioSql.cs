@@ -1,7 +1,7 @@
 using AutoMapper;
 using Dapper;
 using eAgenda.WebApp.Compartilhado.Extensions;
-using eAgenda.WebApp.Compartilhado.Infra;
+using eAgenda.WebApp.Compartilhado.Infra.Sql;
 using Microsoft.Data.SqlClient;
 
 namespace eAgenda.WebApp.Compartilhado.ModuloBase;

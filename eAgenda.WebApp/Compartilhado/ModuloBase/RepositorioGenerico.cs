@@ -1,5 +1,5 @@
 using Dapper;
-using eAgenda.WebApp.Compartilhado.Infra;
+using eAgenda.WebApp.Compartilhado.Infra.Sql;
 
 namespace eAgenda.WebApp.Compartilhado.ModuloBase;
 

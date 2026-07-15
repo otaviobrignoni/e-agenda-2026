@@ -1,5 +1,5 @@
 using AutoMapper;
-using eAgenda.WebApp.Compartilhado.Infra;
+using eAgenda.WebApp.Compartilhado.Infra.Sql;
 using eAgenda.WebApp.Compartilhado.ModuloBase;
 using eAgenda.WebApp.ModuloCategoria.Dominio;
 

@@ -1,6 +1,6 @@
 using Microsoft.Data.SqlClient;
 
-namespace eAgenda.WebApp.Compartilhado.Infra;
+namespace eAgenda.WebApp.Compartilhado.Infra.Sql;
 
 public sealed class SqlConnectionFactory(IConfiguration config) : ISqlConnectionFactory
 {

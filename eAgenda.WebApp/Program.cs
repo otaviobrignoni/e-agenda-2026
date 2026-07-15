@@ -10,7 +10,7 @@ public class Program
 
         builder.Services.AddPresentationConfig(builder.Configuration);
         builder.Services.AddServicesConfig(builder.Configuration, builder.Logging);
-        builder.Services.AddRepositoriesConfig();
+        builder.Services.AddRepositoriesConfig(builder.Configuration);
 
         var app = builder.Build();
 

@@ -1,9 +1,11 @@
+using AutoMapper;
+using eAgenda.WebApp.Compartilhado.Extensions;
 using eAgenda.WebApp.ModuloTarefa.Dominio;
 using FluentResults;
 
 namespace eAgenda.WebApp.ModuloTarefa.Aplicacao;
 
-public class ServicoItemTarefa(IRepositorioTarefa repositorioTarefa, IRepositorioItemTarefa repositorioItemTarefa) :  IServicoItemTarefa
+public class ServicoItemTarefa(IRepositorioTarefa repositorioTarefa, IRepositorioItemTarefa repositorioItemTarefa, IMapper mapper) :  IServicoItemTarefa
 {
     public Result Cadastrar(ItemTarefaDto dto)
     {
@@ -15,7 +17,7 @@ public class ServicoItemTarefa(IRepositorioTarefa repositorioTarefa, IRepositori
         if (tarefa is null)
             return Result.Fail("Tarefa não encontrada.");
 
-        var item = new ItemTarefa(dto.Titulo.Trim(), tarefa);
+        var item = mapper.MapWith<ItemTarefa>(dto, (nameof(ItemTarefa.Tarefa), tarefa));
 
         tarefa.AdicionarItem(item);
 
@@ -58,31 +60,32 @@ public class ServicoItemTarefa(IRepositorioTarefa repositorioTarefa, IRepositori
         if (tarefa is null)
             return Result.Fail("Tarefa não encontrada.");
 
-        var idsSubmetidos = itens.Select(i => i.Id).Where(id => id != Guid.Empty);
-        var itensExcluidos = tarefa.Itens.Where(i => !idsSubmetidos.Contains(i.Id));
-        var itensAdicionados = new List<ItemTarefa>();
+        var idsSubmetidos = itens
+            .Select(i => i.Id)
+            .Where(id => id != Guid.Empty)
+            .ToHashSet();
+
+        var itensExcluidos = tarefa.Itens
+            .Where(i => !idsSubmetidos.Contains(i.Id))
+            .ToList();
+
+        var itensAdicionados = mapper.MapWith<List<ItemTarefa>>(itens.Where(i => i.Id == Guid.Empty).ToList(), (nameof(ItemTarefa.Tarefa), tarefa));
+
+        var itensDict = tarefa.Itens.ToDictionary(i => i.Id);
         var itensEditados = new List<ItemTarefa>();
 
-        foreach (var item in itensExcluidos)
-            tarefa.RemoverItem(item);
-
-        foreach (var dto in itens.Where(i => i.Id == Guid.Empty))
-        {
-            var novoItem = new ItemTarefa(dto.Titulo.Trim(), tarefa, dto.EstaConcluido);
-            tarefa.AdicionarItem(novoItem);
-            itensAdicionados.Add(novoItem);
-        }
+        tarefa.RemoverItens(itensExcluidos);
+        tarefa.AdicionarItens(itensAdicionados);
 
         foreach (var dto in itens.Where(i => i.Id != Guid.Empty))
         {
-            var item = tarefa.Itens.FirstOrDefault(i => i.Id == dto.Id);
-            if (item is null)
+            if (!itensDict.TryGetValue(dto.Id, out var item))
                 return Result.Fail("Item da tarefa não encontrado.");
 
             if (item.EstaConcluido == dto.EstaConcluido)
                 continue;
 
-            item.Atualizar(new ItemTarefa(item.Titulo, item.Tarefa, dto.EstaConcluido));
+            mapper.Map(dto, item);
             itensEditados.Add(item);
         }
 

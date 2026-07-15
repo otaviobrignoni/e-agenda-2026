@@ -15,6 +15,13 @@ public class TarefaProfile : Profile
         CreateMap<Tarefa, TarefaDto>();
         CreateMap<Tarefa, MostrarTarefaDto>();
         CreateMap<ItemTarefa, ItemTarefaDto>();
+        CreateMap<ItemTarefaDto, ItemTarefa>()
+            .ForCtorParam("titulo", opt => opt.MapFrom(src => src.Titulo.Trim()))
+            .ForCtorParam("tarefa", opt => opt.MapFromContext(nameof(ItemTarefa.Tarefa)))
+            .ForCtorParam("estaConcluido", opt => opt.MapFrom(src => src.EstaConcluido))
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.Titulo, opt => opt.Ignore())
+            .ForMember(dest => dest.Tarefa, opt => opt.Ignore());
         CreateMap<ItemTarefaRow, ItemTarefa>()
             .ForCtorParam("titulo", opt => opt.MapFrom(src => src.Titulo))
             .ForCtorParam("tarefa", opt => opt.MapFromContext(nameof(ItemTarefa.Tarefa)))

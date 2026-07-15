@@ -1,22 +1,24 @@
-using eAgenda.WebApp.Compartilhado.Infra;
+using eAgenda.WebApp.Compartilhado.Infra.Orm;
+using eAgenda.WebApp.Compartilhado.Infra.Sql;
 using eAgenda.WebApp.Compartilhado.Logging;
 using eAgenda.WebApp.Compartilhado.Mapping;
 using eAgenda.WebApp.Compartilhado.ModuloBase;
-using eAgenda.WebApp.ModuloTarefa.Aplicacao;
-using eAgenda.WebApp.ModuloTarefa.Dominio;
-using eAgenda.WebApp.ModuloTarefa.Infra;
 using eAgenda.WebApp.ModuloCategoria.Aplicacao;
 using eAgenda.WebApp.ModuloCategoria.Dominio;
 using eAgenda.WebApp.ModuloCategoria.Infra;
+using eAgenda.WebApp.ModuloCompromisso.Aplicacao;
+using eAgenda.WebApp.ModuloCompromisso.Dominio;
+using eAgenda.WebApp.ModuloCompromisso.Infra;
 using eAgenda.WebApp.ModuloContato.Aplicacao;
 using eAgenda.WebApp.ModuloContato.Dominio;
 using eAgenda.WebApp.ModuloContato.Infra;
 using eAgenda.WebApp.ModuloDespesa.Aplicacao;
 using eAgenda.WebApp.ModuloDespesa.Dominio;
 using eAgenda.WebApp.ModuloDespesa.Infra;
-using eAgenda.WebApp.ModuloCompromisso.Dominio;
-using eAgenda.WebApp.ModuloCompromisso.Infra;
-using eAgenda.WebApp.ModuloCompromisso.Aplicacao;
+using eAgenda.WebApp.ModuloTarefa.Aplicacao;
+using eAgenda.WebApp.ModuloTarefa.Dominio;
+using eAgenda.WebApp.ModuloTarefa.Infra;
+using Microsoft.EntityFrameworkCore;
 
 namespace eAgenda.WebApp.Compartilhado;
 
@@ -51,18 +53,29 @@ public static class InjecaoDependencia
     }
 
     // Camada de Infraestrutura
-    public static void AddRepositoriesConfig(this IServiceCollection services)
+    public static void AddRepositoriesConfig(this IServiceCollection services, IConfiguration config)
     {
+        services.AddDbContext<EAgendaDbContext>(options =>
+        {
+            string connectionStringName = "eAgendaOrm";
+            string? connectionString = config.GetConnectionString(connectionStringName);
+
+            if (string.IsNullOrEmpty(connectionString))
+                throw new InvalidOperationException($"ConnectionString \"{connectionStringName}\" não encontrada");
+
+            options.UseSqlServer(connectionString);
+        });
+
         services.AddScoped<ISqlConnectionFactory, SqlConnectionFactory>();
         services.AddScoped<IRepositorioGenerico, RepositorioGenerico>();
 
         //services.AddScoped<IRepositorio(*), Repositorio(*)>();
-        services.AddScoped<IRepositorioTarefa, RepositorioTarefa>();
-        services.AddScoped<IRepositorioItemTarefa, RepositorioItemTarefa>();
-        services.AddScoped<IRepositorioCategoria, RepositorioCategoria>();
-        services.AddScoped<IRepositorioContato, RepositorioContato>();
-        services.AddScoped<IRepositorioDespesa, RepositorioDespesa>();
-        services.AddScoped<IRepositorioCompromisso, RepositorioCompromisso>();
+        services.AddScoped<IRepositorioTarefa, RepositorioTarefaOrm>();
+        services.AddScoped<IRepositorioItemTarefa, RepositorioItemTarefaOrm>();
+        services.AddScoped<IRepositorioCategoria, RepositorioCategoriaOrm>();
+        services.AddScoped<IRepositorioContato, RepositorioContatoOrm>();
+        services.AddScoped<IRepositorioDespesa, RepositorioDespesaOrm>();
+        services.AddScoped<IRepositorioCompromisso, RepositorioCompromissoOrm>();
     }
 
     // Camada de Aplicação
