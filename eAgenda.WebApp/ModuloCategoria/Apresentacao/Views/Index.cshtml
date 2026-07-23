@@ -1,5 +1,4 @@
-﻿@using eAgenda.WebApp.ModuloContato.Dominio
-@{
+﻿@{
     ViewBag.Titulo = "Listagem de Categorias";
 }
 
@@ -18,12 +17,12 @@
 else
 {
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-2">
-        @foreach (var p in Model)
+        @foreach (var c in Model)
         {
             var campos = new[] {
-                p.DisplayField(vm => vm.Titulo)
+                c.DisplayField(vm => vm.Titulo)
             };
-            <partial name="_Card" model="(p.DisplayField(vm => vm.Id.ToShortString(), p.Titulo), campos, p.Id, false, true)" />
+            <partial name="_Card" model="(c.DisplayField(vm => vm.Id.ToShortString(), c.Titulo), campos, c.Id, false, true)" />
         }
     </div>
 }
